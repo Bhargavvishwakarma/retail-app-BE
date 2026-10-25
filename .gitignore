@@ -1,0 +1,11 @@
+# Maven build output
+target/
+
+# Local editor configuration
+.vscode/
+
+# Local environment files and logs
+.env
+.env.*
+!.env.example
+*.log
