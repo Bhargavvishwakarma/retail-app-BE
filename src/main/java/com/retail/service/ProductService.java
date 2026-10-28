@@ -4,6 +4,10 @@ import com.retail.model.Product;
 import com.retail.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.math.BigDecimal;
@@ -21,6 +25,14 @@ public class ProductService {
             return productRepository.searchActive(search.trim());
         }
         return productRepository.findByActiveTrue();
+    }
+
+    public Page<Product> findPage(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        if (search != null && !search.isBlank()) {
+            return productRepository.searchActive(search.trim(), pageable);
+        }
+        return productRepository.findByActiveTrue(pageable);
     }
 
     public List<Product> findLowStock(int threshold) {

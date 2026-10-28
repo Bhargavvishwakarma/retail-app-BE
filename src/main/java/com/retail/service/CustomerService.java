@@ -4,6 +4,10 @@ import com.retail.model.Customer;
 import com.retail.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +23,16 @@ public class CustomerService {
             return customerRepository.findByNameContainingIgnoreCaseOrPhoneContaining(search, search);
         }
         return customerRepository.findAll();
+    }
+
+    public Page<Customer> findPage(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        if (search != null && !search.isBlank()) {
+            String query = search.trim();
+            return customerRepository.findByNameContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                    query, query, query, pageable);
+        }
+        return customerRepository.findAll(pageable);
     }
 
     public Customer findById(UUID id) {

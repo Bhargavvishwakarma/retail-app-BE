@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +67,11 @@ public class AuthService {
         return userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .map(AuthResponse.UserInfo::from)
                 .toList();
+    }
+
+    public Page<AuthResponse.UserInfo> listUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return userRepository.findAll(pageable).map(AuthResponse.UserInfo::from);
     }
 
     public void createInitialOwner(String name, String email, String password) {

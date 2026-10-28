@@ -17,7 +17,14 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<Product> all(@RequestParam(required = false) String search) {
+    public Object all(@RequestParam(required = false) String search,
+                      @RequestParam(required = false) Integer page,
+                      @RequestParam(required = false) Integer size) {
+        if (page != null || size != null) {
+            int pageNumber = page == null ? 0 : Math.max(0, page);
+            int pageSize = size == null ? 24 : Math.min(100, Math.max(1, size));
+            return productService.findPage(search, pageNumber, pageSize);
+        }
         return productService.findAll(search);
     }
 

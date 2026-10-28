@@ -36,7 +36,13 @@ public class AuthController {
     }
 
     @GetMapping("/users")
-    public List<AuthResponse.UserInfo> users() {
+    public Object users(@RequestParam(required = false) Integer page,
+                        @RequestParam(required = false) Integer size) {
+        if (page != null || size != null) {
+            int pageNumber = page == null ? 0 : Math.max(0, page);
+            int pageSize = size == null ? 24 : Math.min(100, Math.max(1, size));
+            return authService.listUsers(pageNumber, pageSize);
+        }
         return authService.listUsers();
     }
 

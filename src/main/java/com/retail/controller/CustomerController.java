@@ -17,7 +17,14 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping
-    public List<Customer> all(@RequestParam(required = false) String search) {
+    public Object all(@RequestParam(required = false) String search,
+                      @RequestParam(required = false) Integer page,
+                      @RequestParam(required = false) Integer size) {
+        if (page != null || size != null) {
+            int pageNumber = page == null ? 0 : Math.max(0, page);
+            int pageSize = size == null ? 24 : Math.min(100, Math.max(1, size));
+            return customerService.findPage(search, pageNumber, pageSize);
+        }
         return customerService.findAll(search);
     }
 

@@ -1,12 +1,16 @@
 package com.retail.service;
 
 import com.retail.dto.SaleRequest;
+import com.retail.dto.SaleSummaryResponse;
 import com.retail.model.*;
 import com.retail.repository.CustomerRepository;
 import com.retail.repository.ProductRepository;
 import com.retail.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,11 @@ public class SaleService {
 
     public List<Sale> findAll() {
         return saleRepository.findAll(Sort.by(Sort.Direction.DESC, "saleDate"));
+    }
+
+    public Page<SaleSummaryResponse> findPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "saleDate"));
+        return saleRepository.findSummaries(pageable);
     }
 
     public Sale findById(UUID id) {
