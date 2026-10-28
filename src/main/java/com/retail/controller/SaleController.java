@@ -25,11 +25,12 @@ public class SaleController {
     public Object all(@RequestParam(required = false) Integer page,
                       @RequestParam(required = false) Integer size,
                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        if (page != null || size != null || from != null || to != null) {
+                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                      @RequestParam(required = false) String search) {
+        if (page != null || size != null || from != null || to != null || search != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 24 : Math.min(100, Math.max(1, size));
-            return saleService.findPage(pageNumber, pageSize, from, to);
+            return saleService.findPage(pageNumber, pageSize, from, to, search);
         }
         return saleService.findAll();
     }

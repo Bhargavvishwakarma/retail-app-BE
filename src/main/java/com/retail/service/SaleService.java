@@ -34,17 +34,18 @@ public class SaleService {
     }
 
     public Page<SaleSummaryResponse> findPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "saleDate"));
-        return saleRepository.findSummaries(pageable);
+        return findPage(page, size, null, null, null);
     }
 
-    public Page<SaleSummaryResponse> findPage(int page, int size, LocalDate from, LocalDate to) {
-        if (from == null && to == null) return findPage(page, size);
-        if (from == null || to == null || to.isBefore(from)) {
+    public Page<SaleSummaryResponse> findPage(int page, int size, LocalDate from, LocalDate to, String search) {
+        if ((from == null) != (to == null) || (from != null && to.isBefore(from))) {
             throw new IllegalArgumentException("A valid start and end date are required");
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "saleDate"));
-        return saleRepository.findSummariesBetween(from.atStartOfDay(), to.plusDays(1).atStartOfDay(), pageable);
+        String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
+        LocalDateTime start = from == null ? null : from.atStartOfDay();
+        LocalDateTime endExclusive = to == null ? null : to.plusDays(1).atStartOfDay();
+        return saleRepository.findSummariesFiltered(start, endExclusive, normalizedSearch, pageable);
     }
 
     public Sale findById(UUID id) {
