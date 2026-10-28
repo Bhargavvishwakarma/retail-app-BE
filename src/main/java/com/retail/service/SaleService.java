@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +36,15 @@ public class SaleService {
     public Page<SaleSummaryResponse> findPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "saleDate"));
         return saleRepository.findSummaries(pageable);
+    }
+
+    public Page<SaleSummaryResponse> findPage(int page, int size, LocalDate from, LocalDate to) {
+        if (from == null && to == null) return findPage(page, size);
+        if (from == null || to == null || to.isBefore(from)) {
+            throw new IllegalArgumentException("A valid start and end date are required");
+        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "saleDate"));
+        return saleRepository.findSummariesBetween(from.atStartOfDay(), to.plusDays(1).atStartOfDay(), pageable);
     }
 
     public Sale findById(UUID id) {

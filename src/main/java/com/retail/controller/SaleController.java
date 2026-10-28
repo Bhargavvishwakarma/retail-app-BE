@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,11 +23,13 @@ public class SaleController {
 
     @GetMapping
     public Object all(@RequestParam(required = false) Integer page,
-                      @RequestParam(required = false) Integer size) {
-        if (page != null || size != null) {
+                      @RequestParam(required = false) Integer size,
+                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        if (page != null || size != null || from != null || to != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 24 : Math.min(100, Math.max(1, size));
-            return saleService.findPage(pageNumber, pageSize);
+            return saleService.findPage(pageNumber, pageSize, from, to);
         }
         return saleService.findAll();
     }
