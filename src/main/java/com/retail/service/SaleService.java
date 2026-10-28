@@ -25,6 +25,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SaleService {
 
+    private static final LocalDateTime MIN_SALE_DATE = LocalDateTime.of(1, 1, 1, 0, 0);
+    private static final LocalDateTime MAX_SALE_DATE = LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999_999_999);
+
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
@@ -42,9 +45,9 @@ public class SaleService {
             throw new IllegalArgumentException("A valid start and end date are required");
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "saleDate"));
-        String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
-        LocalDateTime start = from == null ? null : from.atStartOfDay();
-        LocalDateTime endExclusive = to == null ? null : to.plusDays(1).atStartOfDay();
+        String normalizedSearch = search == null || search.isBlank() ? "" : search.trim();
+        LocalDateTime start = from == null ? MIN_SALE_DATE : from.atStartOfDay();
+        LocalDateTime endExclusive = to == null ? MAX_SALE_DATE : to.plusDays(1).atStartOfDay();
         return saleRepository.findSummariesFiltered(start, endExclusive, normalizedSearch, pageable);
     }
 

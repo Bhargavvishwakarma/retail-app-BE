@@ -17,16 +17,16 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
     @Query(value = "select new com.retail.dto.SaleSummaryResponse(s.id, s.saleNumber, s.saleDate, c.name, s.paymentMethod, s.totalAmount) " +
             "from Sale s left join s.customer c " +
-            "where (:from is null or s.saleDate >= :from) " +
-            "and (:toExclusive is null or s.saleDate < :toExclusive) " +
-            "and (:search is null or lower(coalesce(s.saleNumber, '')) like lower(concat('%', :search, '%')) " +
+            "where s.saleDate >= :from " +
+            "and s.saleDate < :toExclusive " +
+            "and (:search = '' or lower(coalesce(s.saleNumber, '')) like lower(concat('%', :search, '%')) " +
             "or lower(coalesce(c.name, '')) like lower(concat('%', :search, '%')) " +
             "or lower(coalesce(c.phone, '')) like lower(concat('%', :search, '%')) " +
             "or lower(coalesce(c.email, '')) like lower(concat('%', :search, '%')))",
             countQuery = "select count(s) from Sale s left join s.customer c " +
-                    "where (:from is null or s.saleDate >= :from) " +
-                    "and (:toExclusive is null or s.saleDate < :toExclusive) " +
-                    "and (:search is null or lower(coalesce(s.saleNumber, '')) like lower(concat('%', :search, '%')) " +
+                    "where s.saleDate >= :from " +
+                    "and s.saleDate < :toExclusive " +
+                    "and (:search = '' or lower(coalesce(s.saleNumber, '')) like lower(concat('%', :search, '%')) " +
                     "or lower(coalesce(c.name, '')) like lower(concat('%', :search, '%')) " +
                     "or lower(coalesce(c.phone, '')) like lower(concat('%', :search, '%')) " +
                     "or lower(coalesce(c.email, '')) like lower(concat('%', :search, '%')))")

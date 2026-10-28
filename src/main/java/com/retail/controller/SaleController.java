@@ -29,7 +29,7 @@ public class SaleController {
                       @RequestParam(required = false) String search) {
         if (page != null || size != null || from != null || to != null || search != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
-            int pageSize = size == null ? 24 : Math.min(100, Math.max(1, size));
+            int pageSize = size == null ? 10 : Math.min(100, Math.max(1, size));
             return saleService.findPage(pageNumber, pageSize, from, to, search);
         }
         return saleService.findAll();
