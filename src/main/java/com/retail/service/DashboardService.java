@@ -1,36 +1,63 @@
 package com.retail.service;
 
-import com.retail.repository.CustomerRepository;
-import com.retail.repository.ProductRepository;
+import com.retail.model.Sale;
+import com.retail.repository.DashboardSummaryRepository;
 import com.retail.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
 
     private final SaleRepository saleRepository;
-    private final ProductRepository productRepository;
-    private final CustomerRepository customerRepository;
+    private final DashboardSummaryRepository dashboardSummaryRepository;
 
+    @Transactional(readOnly = true)
     public Map<String, Object> getSummary() {
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
+        var metrics = dashboardSummaryRepository.loadMetrics(start, end, 5);
+        List<UUID> recentSaleIds = saleRepository.findRecentSaleIds(PageRequest.of(0, 5));
+        List<Sale> recentSales = recentSaleIds.isEmpty()
+                ? List.of()
+                : restoreRecentSalesOrder(recentSaleIds, saleRepository.findAllWithDetailsByIdIn(recentSaleIds));
 
         Map<String, Object> summary = new LinkedHashMap<>();
-        summary.put("todayRevenue", saleRepository.sumTotalBetween(start, end));
-        summary.put("todaySalesCount", saleRepository.countBySaleDateBetween(start, end));
-        summary.put("totalProducts", productRepository.countByActiveTrue());
-        summary.put("lowStockCount", productRepository.countByActiveTrueAndStockQuantityLessThan(5));
-        summary.put("totalCustomers", customerRepository.count());
-        summary.put("recentSales", saleRepository.findTop5ByOrderBySaleDateDesc());
+        summary.put("todayRevenue", metrics.getTodayRevenue());
+        summary.put("todaySalesCount", metrics.getTodaySalesCount());
+        summary.put("totalProducts", metrics.getTotalProducts());
+        summary.put("lowStockCount", metrics.getLowStockCount());
+        summary.put("totalCustomers", metrics.getTotalCustomers());
+        summary.put("recentSales", recentSales);
         return summary;
+    }
+
+    private List<Sale> restoreRecentSalesOrder(List<UUID> recentSaleIds, List<Sale> loadedSales) {
+        Map<UUID, Sale> salesById = new HashMap<>(loadedSales.size());
+        for (Sale sale : loadedSales) {
+            salesById.put(sale.getId(), sale);
+        }
+
+        List<Sale> orderedSales = new ArrayList<>(recentSaleIds.size());
+        for (UUID saleId : recentSaleIds) {
+            Sale sale = salesById.get(saleId);
+            if (sale != null) {
+                orderedSales.add(sale);
+            }
+        }
+        return orderedSales;
     }
 }

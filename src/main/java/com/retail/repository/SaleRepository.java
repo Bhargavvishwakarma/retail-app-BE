@@ -40,5 +40,14 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
     long countBySaleDateBetween(LocalDateTime start, LocalDateTime end);
 
-    List<Sale> findTop5ByOrderBySaleDateDesc();
+    @Query("select s.id from Sale s order by s.saleDate desc")
+    List<UUID> findRecentSaleIds(Pageable pageable);
+
+    @Query("select distinct s from Sale s " +
+            "left join fetch s.customer " +
+            "left join fetch s.items i " +
+            "left join fetch i.product p " +
+            "left join fetch p.category " +
+            "where s.id in :ids")
+    List<Sale> findAllWithDetailsByIdIn(@Param("ids") List<UUID> ids);
 }
