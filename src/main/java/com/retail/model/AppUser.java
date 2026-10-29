@@ -25,8 +25,17 @@ public class AppUser {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String passwordHash;
+
+    @Column(name = "google_sub", unique = true, length = 255)
+    private String googleSub;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(name = "token_version", nullable = false)
+    private int tokenVersion;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

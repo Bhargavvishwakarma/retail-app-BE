@@ -45,6 +45,21 @@ public class DashboardService {
         return summary;
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Object> getOperationalSummary() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay();
+        var metrics = dashboardSummaryRepository.loadMetrics(start, end, 5);
+
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("todaySalesCount", metrics.getTodaySalesCount());
+        summary.put("totalProducts", metrics.getTotalProducts());
+        summary.put("lowStockCount", metrics.getLowStockCount());
+        summary.put("totalCustomers", metrics.getTotalCustomers());
+        return summary;
+    }
+
     private List<Sale> restoreRecentSalesOrder(List<UUID> recentSaleIds, List<Sale> loadedSales) {
         Map<UUID, Sale> salesById = new HashMap<>(loadedSales.size());
         for (Sale sale : loadedSales) {

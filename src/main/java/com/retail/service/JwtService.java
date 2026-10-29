@@ -26,8 +26,10 @@ public class JwtService {
     public String createToken(AppUser user) {
         Instant now = Instant.now();
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("role", user.getRole().name())
+                .subject(user.getId().toString())
+                .issuer("retail-backend")
+                .claim("aud", "retail-api")
+                .claim("ver", user.getTokenVersion())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(expirationSeconds)))
                 .signWith(signingKey)
@@ -35,7 +37,10 @@ public class JwtService {
     }
 
     public Claims parse(String token) {
-        return Jwts.parser().verifyWith(signingKey).build()
+        return Jwts.parser().verifyWith(signingKey)
+                .requireIssuer("retail-backend")
+                .requireAudience("retail-api")
+                .build()
                 .parseSignedClaims(token).getPayload();
     }
 

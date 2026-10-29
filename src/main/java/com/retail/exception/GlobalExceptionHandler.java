@@ -1,6 +1,7 @@
 package com.retail.exception;
 
 import com.retail.config.RequestLoggingFilter;
+import com.retail.service.GoogleIdentityVerifier;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -29,6 +31,30 @@ public class GlobalExceptionHandler {
             com.retail.service.AuthService.InvalidCredentialsException ex, HttpServletRequest request) {
         log.warn("authentication_failed reason=invalid_credentials requestId={}", requestId());
         return response(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_FAILED", "Email or password is incorrect", request);
+    }
+
+    @ExceptionHandler(GoogleIdentityVerifier.InvalidGoogleTokenException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidGoogleToken(
+            GoogleIdentityVerifier.InvalidGoogleTokenException ex, HttpServletRequest request) {
+        log.warn("google_authentication_failed requestId={}", requestId());
+        return response(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_FAILED",
+                "Google authentication failed", request);
+    }
+
+    @ExceptionHandler(GoogleIdentityVerifier.GoogleVerificationUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleGoogleVerificationUnavailable(
+            GoogleIdentityVerifier.GoogleVerificationUnavailableException ex, HttpServletRequest request) {
+        log.error("google_authentication_unavailable requestId={}", requestId());
+        return response(HttpStatus.SERVICE_UNAVAILABLE, "AUTHENTICATION_UNAVAILABLE",
+                "Google sign-in is not configured", request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex,
+                                                             HttpServletRequest request) {
+        log.warn("request_conflict constraint_violation requestId={}", requestId());
+        return response(HttpStatus.CONFLICT, "CONFLICT",
+                "The requested account change conflicts with existing data", request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

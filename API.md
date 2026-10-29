@@ -6,17 +6,16 @@ All entity IDs are UUID strings. For example, `/api/products/{id}` and sale requ
 
 ## First owner setup
 
-There is no public signup endpoint, so a client cannot grant itself owner access. On the first backend start, set `BOOTSTRAP_OWNER_EMAIL` and `BOOTSTRAP_OWNER_PASSWORD` (and optionally `BOOTSTRAP_OWNER_NAME`). The backend creates that owner if the email is not already present. The password must be at least 8 characters. Keep these environment values private and remove the password from the runtime environment after the initial account is created.
+There is no public signup endpoint, so a client cannot grant itself owner access. On the first backend start, set `BOOTSTRAP_OWNER_EMAIL` to the owner's verified Google email and optionally set `BOOTSTRAP_OWNER_NAME`. The backend creates an active owner account without a password; sign in with Google using that email. Remove `BOOTSTRAP_OWNER_EMAIL` from the runtime environment after the first owner has been created.
 
-For deployments, set `JWT_SECRET` to a base64-encoded random value containing at least 32 bytes. Example generation: `openssl rand -base64 32`. Local development has a built-in development-only fallback so the app can start without this variable; never use that fallback in a deployed or shared environment. Tokens expire after 8 hours by default; set `JWT_EXPIRATION_SECONDS` to change this.
+Set `JWT_SECRET` in local development and deployments to a base64-encoded random value containing at least 32 bytes. Example generation: `openssl rand -base64 32`. The backend has no in-repository signing-key fallback. Tokens expire after 8 hours by default; set `JWT_EXPIRATION_SECONDS` to change this.
 
 Example local environment values (use your own secrets):
 
 ```text
-JWT_SECRET=<base64-encoded 32+ random bytes>  # required outside local development
+JWT_SECRET=<base64-encoded 32+ random bytes>
 BOOTSTRAP_OWNER_NAME=Store Owner
 BOOTSTRAP_OWNER_EMAIL=owner@example.com
-BOOTSTRAP_OWNER_PASSWORD=<private password, 8+ characters>
 ```
 
 ## Login

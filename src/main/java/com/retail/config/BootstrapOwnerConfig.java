@@ -11,17 +11,10 @@ public class BootstrapOwnerConfig {
     @Bean
     ApplicationRunner bootstrapOwner(AuthService authService,
                                      @Value("${app.bootstrap-owner.name:Owner}") String name,
-                                     @Value("${app.bootstrap-owner.email:}") String email,
-                                     @Value("${app.bootstrap-owner.password:}") String password) {
+                                     @Value("${app.bootstrap-owner.email:}") String email) {
         return args -> {
-            if (email.isBlank() != password.isBlank()) {
-                throw new IllegalStateException("Set both BOOTSTRAP_OWNER_EMAIL and BOOTSTRAP_OWNER_PASSWORD, or neither");
-            }
-            if (!password.isBlank() && password.length() < 8) {
-                throw new IllegalStateException("BOOTSTRAP_OWNER_PASSWORD must contain at least 8 characters");
-            }
             if (!email.isBlank()) {
-                authService.createInitialOwner(name, email, password);
+                authService.bootstrapInitialOwner(name, email);
             }
         };
     }

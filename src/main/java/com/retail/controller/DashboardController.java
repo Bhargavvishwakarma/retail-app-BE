@@ -19,4 +19,9 @@ public class DashboardController {
     public Map<String, Object> summary() {
         return dashboardService.getSummary();
     }
+
+    @GetMapping("/operational")
+    public Map<String, Object> operationalSummary() {
+        return dashboardService.getOperationalSummary();
+    }
 }

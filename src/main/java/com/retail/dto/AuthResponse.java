@@ -11,9 +11,11 @@ public record AuthResponse(String token, String tokenType, long expiresIn, UserI
                 UserInfo.from(user));
     }
 
-    public record UserInfo(UUID id, String name, String email, UserRole role, String workspaceTheme, LocalDateTime createdAt) {
+    public record UserInfo(UUID id, String name, String email, UserRole role, String workspaceTheme,
+                           LocalDateTime createdAt, boolean active) {
         public static UserInfo from(AppUser user) {
-            return new UserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole(), user.getWorkspaceTheme(), user.getCreatedAt());
+            return new UserInfo(user.getId(), user.getName(), user.getEmail(), user.getRole(),
+                    user.getWorkspaceTheme(), user.getCreatedAt(), user.isActive());
         }
     }
 }
