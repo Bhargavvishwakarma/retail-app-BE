@@ -69,7 +69,17 @@ public class AiRetailDataService {
             }
             case RECENT_SALES -> {
                 requireOwner(actor.role());
-                yield jdbc.queryForList("select sale_number as saleNumber, sale_date as saleDate, " +
+                if (request.from() != null || request.to() != null) {
+                    var range = dateRange(request.from(), request.to());
+                    yield jdbc.queryForList("select sale_number as saleNumber, " +
+                                    "to_char(sale_date, 'YYYY-MM-DD\"T\"HH24:MI:SS') as saleDate, " +
+                                    "total_amount as totalAmount, payment_method as paymentMethod " +
+                                    "from sales where sale_date >= ? and sale_date < ? " +
+                                    "order by sale_date desc limit ?",
+                            range[0], range[1], limit(request.limit(), 10));
+                }
+                yield jdbc.queryForList("select sale_number as saleNumber, " +
+                                "to_char(sale_date, 'YYYY-MM-DD\"T\"HH24:MI:SS') as saleDate, " +
                                 "total_amount as totalAmount, payment_method as paymentMethod " +
                                 "from sales order by sale_date desc limit ?", limit(request.limit(), 10));
             }
