@@ -61,14 +61,15 @@ public class SaleService {
 
     @Transactional
     @Caching(evict = {
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
     public Sale createSale(SaleRequest request) {
         Sale sale = new Sale();
         sale.setSaleNumber("S-" + System.currentTimeMillis() + "-" + (int) (Math.random() * 1000));
         sale.setPaymentMethod(request.getPaymentMethod());
-        sale.setSaleDate(LocalDateTime.now());
+        sale.setSaleDate(com.retail.util.StoreTime.now());
 
         if (request.getCustomerId() != null) {
             Customer customer = customerRepository.findById(request.getCustomerId())

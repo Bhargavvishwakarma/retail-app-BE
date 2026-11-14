@@ -25,9 +25,9 @@ public class DashboardService {
     private final DashboardSummaryRepository dashboardSummaryRepository;
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()")
+    @Cacheable(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()")
     public Map<String, Object> getSummary() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = com.retail.util.StoreTime.today();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
         var metrics = dashboardSummaryRepository.loadMetrics(start, end, 5);
@@ -44,9 +44,9 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    @Cacheable(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()")
     public Map<String, Object> getOperationalSummary() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = com.retail.util.StoreTime.today();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
         var metrics = dashboardSummaryRepository.loadMetrics(start, end, 5);

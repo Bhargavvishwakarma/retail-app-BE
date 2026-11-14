@@ -120,6 +120,12 @@ Returns `201` and the public user details (no token or password). A receptionist
 
 Flyway applies migrations from `src/main/resources/db/migration` during startup. Hibernate validates the schema and no longer alters it automatically. `V1` creates the schema with UUID primary keys. Start with an empty database; this migration chain does not import or convert the old numeric-ID schema.
 
+## Owner dashboard analytics
+
+`GET /api/dashboard/analytics?from=2026-11-01&to=2026-11-14` is owner-only. Dates are inclusive store-calendar dates in `Asia/Kolkata`; the selected range is limited to 366 days. The response contains current and equal-length previous-period sales totals/counts, daily series, the top five products by units and revenue, recorded payment-method totals, active inventory health, products with no sales in the last 30 days, recent sales/customer/product records, and a generation timestamp. Dashboard aggregates use database queries and do not return full sales, customer, or product datasets.
+
+The current schema has no sale cancellation or return records, no payment-status or amount-paid fields, and no sale-time copy of product cost. Therefore saved sale totals are reported as recorded, while gross profit and outstanding balances are unavailable. Inventory cost value is returned only when every active in-stock product has a positive recorded product cost. Payment totals show the method attached to each recorded sale, not settlement status.
+
 ## Current role access
 
 | API operation | Owner | Receptionist |
@@ -130,7 +136,8 @@ Flyway applies migrations from `src/main/resources/db/migration` during startup.
 | Create/update customers | Yes | Yes |
 | Delete customers | Yes | No |
 | Create sales | Yes | Yes |
-| Read sales and dashboard summary | Yes | No |
+| Read sales, dashboard summary, and dashboard analytics | Yes | No |
+| Read operational dashboard | Yes | Yes |
 | Read customers with recorded sales today | Yes | No |
 | Create receptionist login | Yes | No |
 

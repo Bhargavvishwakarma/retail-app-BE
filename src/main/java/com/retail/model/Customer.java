@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.retail.util.StoreTime;
 
 @Entity
 @Table(name = "customers")
@@ -29,5 +30,5 @@ public class Customer {
 
     private String address;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = StoreTime.now();
 }

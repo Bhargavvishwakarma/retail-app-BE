@@ -44,14 +44,16 @@ public class CustomerService {
     }
 
     @Caching(evict = {
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
     public Customer create(Customer customer) {
         customer.setId(null);
         return customerRepository.save(customer);
     }
 
+    @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     public Customer update(UUID id, Customer request) {
         Customer existing = findById(id);
         existing.setName(request.getName());
@@ -62,8 +64,9 @@ public class CustomerService {
     }
 
     @Caching(evict = {
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
     public void delete(UUID id) {
         customerRepository.deleteById(id);

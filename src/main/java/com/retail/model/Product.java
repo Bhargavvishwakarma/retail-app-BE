@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.retail.util.StoreTime;
 
 @Entity
 @Table(name = "products")
@@ -49,5 +50,5 @@ public class Product {
 
     private Boolean active = true;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = StoreTime.now();
 }

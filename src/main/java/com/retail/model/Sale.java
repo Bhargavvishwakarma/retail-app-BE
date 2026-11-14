@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.retail.util.StoreTime;
 
 @Entity
 @Table(name = "sales")
@@ -30,7 +31,7 @@ public class Sale {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    private LocalDateTime saleDate = LocalDateTime.now();
+    private LocalDateTime saleDate = StoreTime.now();
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;

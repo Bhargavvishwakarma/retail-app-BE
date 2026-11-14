@@ -48,8 +48,9 @@ public class ProductService {
     }
 
     @Caching(evict = {
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
     public Product create(Product product) {
         validateMinimumPrice(product);
@@ -58,8 +59,9 @@ public class ProductService {
     }
 
     @Caching(evict = {
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
     public Product update(UUID id, Product request) {
         validateMinimumPrice(request);
@@ -86,8 +88,9 @@ public class ProductService {
     }
 
     @Caching(evict = {
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
-            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
     public void delete(UUID id) {
         Product product = findById(id);

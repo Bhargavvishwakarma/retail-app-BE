@@ -3,6 +3,7 @@ package com.retail.controller;
 import com.retail.config.SecurityConfig;
 import com.retail.repository.AppUserRepository;
 import com.retail.service.DashboardService;
+import com.retail.service.DashboardAnalyticsService;
 import com.retail.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ class DashboardAuthorizationTest {
 
     @MockBean
     private DashboardService dashboardService;
+
+    @MockBean
+    private DashboardAnalyticsService dashboardAnalyticsService;
 
     @MockBean
     private JwtService jwtService;
@@ -61,6 +65,33 @@ class DashboardAuthorizationTest {
         mvc.perform(get("/api/dashboard/summary")).andExpect(status().isOk());
 
         verify(dashboardService).getSummary();
+    }
+
+    @Test
+    @WithMockUser(roles = "RECEPTIONIST")
+    void receptionistCannotReadOwnerDashboardAnalytics() throws Exception {
+        mvc.perform(get("/api/dashboard/analytics")
+                        .param("from", "2026-11-01")
+                        .param("to", "2026-11-14"))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(dashboardAnalyticsService);
+    }
+
+    @Test
+    @WithMockUser(roles = "OWNER")
+    void ownerCanReadDateFilteredDashboardAnalytics() throws Exception {
+        when(dashboardAnalyticsService.getAnalytics(
+                java.time.LocalDate.parse("2026-11-01"), java.time.LocalDate.parse("2026-11-14")))
+                .thenReturn(org.mockito.Mockito.mock(com.retail.dto.DashboardAnalyticsResponse.class));
+
+        mvc.perform(get("/api/dashboard/analytics")
+                        .param("from", "2026-11-01")
+                        .param("to", "2026-11-14"))
+                .andExpect(status().isOk());
+
+        verify(dashboardAnalyticsService).getAnalytics(
+                java.time.LocalDate.parse("2026-11-01"), java.time.LocalDate.parse("2026-11-14"));
     }
 
     @Test
