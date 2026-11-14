@@ -4,6 +4,7 @@ import com.retail.dto.AuthResponse;
 import com.retail.dto.CreateReceptionistRequest;
 import com.retail.dto.GoogleLoginRequest;
 import com.retail.dto.LoginRequest;
+import com.retail.dto.PageResponse;
 import com.retail.dto.UpdateWorkspacePreferencesRequest;
 import com.retail.dto.UpdateUserRoleRequest;
 import com.retail.dto.UpdateUserStatusRequest;
@@ -33,6 +34,11 @@ public class AuthController {
         return authService.googleLogin(request.idToken());
     }
 
+    @PostMapping("/refresh")
+    public AuthResponse refresh(Authentication authentication) {
+        return authService.refresh(authentication.getName());
+    }
+
     @GetMapping("/me")
     public AuthResponse.UserInfo me(Authentication authentication) {
         return authService.currentUser(authentication.getName());
@@ -56,7 +62,7 @@ public class AuthController {
         if (page != null || size != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 10 : Math.min(100, Math.max(1, size));
-            return authService.listUsers(pageNumber, pageSize);
+            return PageResponse.from(authService.listUsers(pageNumber, pageSize));
         }
         return authService.listUsers();
     }

@@ -19,6 +19,7 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 public class AiRetailDataService {
+    private static final int CUSTOMER_DIRECTORY_PAGE_SIZE = 20;
     private static final Map<String, String> CUSTOMER_FIELD_COLUMNS = Map.of(
             "name", "name", "phone", "phone", "email", "email", "address", "address");
     private final JdbcTemplate jdbc;
@@ -100,11 +101,13 @@ public class AiRetailDataService {
             case CUSTOMER_SUMMARY -> jdbc.queryForList("select count(*) as totalCustomers, " +
                             "count(*) filter (where created_at >= current_date - interval '30 days') as newCustomersLast30Days " +
                             "from customers");
-            case CUSTOMER_DIRECTORY -> customerDirectory(request.fields());
+            case CUSTOMER_DIRECTORY -> customerDirectory(request.fields(),
+                    Math.min(limit(request.limit(), CUSTOMER_DIRECTORY_PAGE_SIZE), CUSTOMER_DIRECTORY_PAGE_SIZE),
+                    request.offset() == null ? 0 : request.offset());
         };
     }
 
-    private List<Map<String, Object>> customerDirectory(List<String> requestedFields) {
+    private List<Map<String, Object>> customerDirectory(List<String> requestedFields, int limit, int offset) {
         var selectedFields = new LinkedHashSet<String>();
         selectedFields.add("name");
         if (requestedFields != null) requestedFields.stream().filter(java.util.Objects::nonNull)
@@ -114,9 +117,12 @@ public class AiRetailDataService {
         String columns = selectedFields.stream().map(CUSTOMER_FIELD_COLUMNS::get)
                 .collect(java.util.stream.Collectors.joining(", "));
         List<Map<String, Object>> customers = jdbc.queryForList(
-                "select " + columns + " from customers order by name");
+                "select " + columns + " from customers order by name, id limit ? offset ?", limit, offset);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("totalCustomers", totalCustomers);
+        result.put("offset", offset);
+        result.put("limit", limit);
+        result.put("hasMore", (long) offset + customers.size() < totalCustomers);
         result.put("customers", customers);
         return List.of(result);
     }

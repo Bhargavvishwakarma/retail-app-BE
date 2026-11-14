@@ -1,8 +1,11 @@
 package com.retail.service;
 
+import com.retail.config.CacheNames;
 import com.retail.model.Customer;
 import com.retail.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +43,10 @@ public class CustomerService {
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    })
     public Customer create(Customer customer) {
         customer.setId(null);
         return customerRepository.save(customer);
@@ -54,6 +61,10 @@ public class CustomerService {
         return customerRepository.save(existing);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    })
     public void delete(UUID id) {
         customerRepository.deleteById(id);
     }

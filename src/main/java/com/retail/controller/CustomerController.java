@@ -1,6 +1,7 @@
 package com.retail.controller;
 
 import com.retail.model.Customer;
+import com.retail.dto.PageResponse;
 import com.retail.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class CustomerController {
         if (page != null || size != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 10 : Math.min(100, Math.max(1, size));
-            return customerService.findPage(search, pageNumber, pageSize);
+            return PageResponse.from(customerService.findPage(search, pageNumber, pageSize));
         }
         return customerService.findAll(search);
     }

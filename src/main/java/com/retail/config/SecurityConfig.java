@@ -61,7 +61,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/dashboard/operational").hasAnyRole("OWNER", "RECEPTIONIST")
                         .requestMatchers(HttpMethod.GET, "/api/sales/**", "/api/dashboard/**").hasRole("OWNER")
                         .requestMatchers(HttpMethod.POST, "/api/auth/receptionists").hasRole("OWNER")
-                        .requestMatchers("/api/auth/me", "/api/auth/logout", "/api/auth/me/preferences")
+                        .requestMatchers("/actuator/**").hasRole("OWNER")
+                        .requestMatchers("/api/auth/me", "/api/auth/refresh", "/api/auth/logout",
+                                "/api/auth/me/preferences")
                                 .hasAnyRole("OWNER", "RECEPTIONIST")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

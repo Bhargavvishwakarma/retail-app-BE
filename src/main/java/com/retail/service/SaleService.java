@@ -1,5 +1,6 @@
 package com.retail.service;
 
+import com.retail.config.CacheNames;
 import com.retail.dto.SaleRequest;
 import com.retail.dto.SaleSummaryResponse;
 import com.retail.model.*;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +60,10 @@ public class SaleService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    })
     public Sale createSale(SaleRequest request) {
         Sale sale = new Sale();
         sale.setSaleNumber("S-" + System.currentTimeMillis() + "-" + (int) (Math.random() * 1000));

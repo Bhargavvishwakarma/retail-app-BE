@@ -1,6 +1,7 @@
 package com.retail.controller;
 
 import com.retail.model.Product;
+import com.retail.dto.PageResponse;
 import com.retail.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class ProductController {
         if (page != null || size != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 10 : Math.min(100, Math.max(1, size));
-            return productService.findPage(search, pageNumber, pageSize);
+            return PageResponse.from(productService.findPage(search, pageNumber, pageSize));
         }
         return productService.findAll(search);
     }

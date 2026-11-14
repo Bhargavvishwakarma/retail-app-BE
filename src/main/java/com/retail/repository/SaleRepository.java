@@ -1,7 +1,8 @@
 package com.retail.repository;
 
-import com.retail.model.Sale;
+import com.retail.dto.RecentSaleResponse;
 import com.retail.dto.SaleSummaryResponse;
+import com.retail.model.Sale;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,14 +41,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
     long countBySaleDateBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query("select s.id from Sale s order by s.saleDate desc")
-    List<UUID> findRecentSaleIds(Pageable pageable);
-
-    @Query("select distinct s from Sale s " +
-            "left join fetch s.customer " +
-            "left join fetch s.items i " +
-            "left join fetch i.product p " +
-            "left join fetch p.category " +
-            "where s.id in :ids")
-    List<Sale> findAllWithDetailsByIdIn(@Param("ids") List<UUID> ids);
+    @Query("select new com.retail.dto.RecentSaleResponse(s.id, s.saleNumber, s.saleDate, s.paymentMethod, s.totalAmount) " +
+            "from Sale s order by s.saleDate desc, s.id desc")
+    List<RecentSaleResponse> findRecentSummaries(Pageable pageable);
 }

@@ -14,7 +14,7 @@ Set these environment variables in the backend runtime. Do not put secrets in so
 | `BOOTSTRAP_OWNER_EMAIL` | First setup only | Verified Google email for the actual shop owner. Omit after an Owner exists. |
 | `BOOTSTRAP_OWNER_NAME` | Optional | Display name used for the first Owner; defaults to `Owner`. |
 | `CORS_ALLOWED_ORIGINS` | Optional | Comma-separated allowed origins. Defaults to the production React URL and `http://localhost:5173`. |
-| `JWT_EXPIRATION_SECONDS` | Optional | Application JWT lifetime; defaults to 28800 seconds. |
+| `JWT_EXPIRATION_SECONDS` | Optional | Application JWT lifetime; defaults to 300 seconds. |
 | `AI_PROCESSOR_SHARED_SECRET` | If using internal AI calls | Shared secret for signed internal service requests. |
 | `AI_ACTOR_TOKEN_SECRET` | Optional | Dedicated key for short-lived internal actor assertions; defaults to `JWT_SECRET`. |
 
@@ -48,7 +48,7 @@ Success (`200`):
 {
   "token": "<application JWT>",
   "tokenType": "Bearer",
-  "expiresIn": 28800,
+  "expiresIn": 300,
   "user": {
     "id": "<application UUID>",
     "name": "Shop Owner",
@@ -68,6 +68,10 @@ The existing `POST /api/auth/login` password endpoint remains available for prev
 ### Current user
 
 `GET /api/auth/me` requires `Authorization: Bearer <application JWT>` and returns the `user` object shown above.
+
+### Refresh
+
+`POST /api/auth/refresh` requires the current valid bearer token in the `Authorization` header and an empty request body. It returns a new application JWT with a fresh five-minute lifetime. Call this before the current token expires.
 
 ### Logout
 

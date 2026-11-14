@@ -81,6 +81,11 @@ public class AuthService {
         return AuthResponse.from(jwtService.createToken(user), jwtService.getExpirationSeconds(), user);
     }
 
+    public AuthResponse refresh(String email) {
+        AppUser user = activeUser(email);
+        return AuthResponse.from(jwtService.createToken(user), jwtService.getExpirationSeconds(), user);
+    }
+
     public AuthResponse.UserInfo createReceptionist(CreateReceptionistRequest request) {
         String email = normalizeEmail(request.getEmail());
         if (userRepository.existsByEmailIgnoreCase(email)) {

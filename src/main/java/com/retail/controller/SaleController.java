@@ -1,6 +1,7 @@
 package com.retail.controller;
 
 import com.retail.dto.SaleRequest;
+import com.retail.dto.PageResponse;
 import com.retail.model.Sale;
 import com.retail.service.SaleService;
 import jakarta.validation.Valid;
@@ -30,7 +31,7 @@ public class SaleController {
         if (page != null || size != null || from != null || to != null || search != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 10 : Math.min(100, Math.max(1, size));
-            return saleService.findPage(pageNumber, pageSize, from, to, search);
+            return PageResponse.from(saleService.findPage(pageNumber, pageSize, from, to, search));
         }
         return saleService.findAll();
     }

@@ -8,7 +8,7 @@ All entity IDs are UUID strings. For example, `/api/products/{id}` and sale requ
 
 There is no public signup endpoint, so a client cannot grant itself owner access. On the first backend start, set `BOOTSTRAP_OWNER_EMAIL` to the owner's verified Google email and optionally set `BOOTSTRAP_OWNER_NAME`. The backend creates an active owner account without a password; sign in with Google using that email. Remove `BOOTSTRAP_OWNER_EMAIL` from the runtime environment after the first owner has been created.
 
-Set `JWT_SECRET` in local development and deployments to a base64-encoded random value containing at least 32 bytes. Example generation: `openssl rand -base64 32`. The backend has no in-repository signing-key fallback. Tokens expire after 8 hours by default; set `JWT_EXPIRATION_SECONDS` to change this.
+Set `JWT_SECRET` in local development and deployments to a base64-encoded random value containing at least 32 bytes. Example generation: `openssl rand -base64 32`. Access tokens expire after 5 minutes by default; set `JWT_EXPIRATION_SECONDS` to change this.
 
 Example local environment values (use your own secrets):
 
@@ -37,7 +37,7 @@ Success (`200`):
 {
   "token": "eyJ...",
   "tokenType": "Bearer",
-  "expiresIn": 28800,
+  "expiresIn": 300,
   "user": {
     "id": "9c1a5fc4-7b01-4f6e-9b18-13861a5748ee",
     "name": "Store Owner",
@@ -84,7 +84,9 @@ Validation failures also contain `errors`, an array of `{ "field", "message" }` 
 { "workspaceTheme": "ocean" }
 ```
 
-A JWT is stateless; logging out in the frontend means discarding the token. The frontend should require a fresh login after `expiresIn` seconds.
+A JWT is stateless; logging out in the frontend means discarding the token. Call the refresh endpoint before `expiresIn` seconds elapse; an expired token requires a fresh login.
+
+`POST /api/auth/refresh` requires the current valid bearer token in the `Authorization` header and an empty request body. It returns a new bearer token with a fresh 5-minute lifetime. Call it before the current token expires.
 
 `GET /api/auth/users` is owner-only and returns all app users for the owner management screen. Each entry contains only `id`, `name`, `email`, `role`, and `createdAt`; password hashes are never returned.
 
@@ -167,7 +169,7 @@ The synchronous JSON response contains `answer`, `conversationId`, the selected 
 
 Invalid or unavailable model IDs return `400`; unauthorized retail-data access returns `403`; provider/data outages return `503`, and timeouts return `504`.
 
-The private `/internal/v1/ai-data/query` endpoint is HMAC-authenticated and requires a short-lived backend-signed actor assertion. It exposes read-only operations only. Sales summaries, best sellers, recent sales, customer visit reports, and low-stock reports are OWNER-only. The customer visit report lists names tied to today's recorded sales, transaction counts, and unnamed walk-in transactions; it cannot count people who entered without a recorded sale. `CUSTOMER_DIRECTORY` returns the total customer count and all customer records with fields requested from the fixed `name`, `phone`, `email`, and `address` allowlist (the name is always included). Current inventory omits archived products. Other customer responses are aggregate summaries without contact details.
+The private `/internal/v1/ai-data/query` endpoint is HMAC-authenticated and requires a short-lived backend-signed actor assertion. It exposes read-only operations only. Sales summaries, best sellers, recent sales, customer visit reports, and low-stock reports are OWNER-only. The customer visit report lists names tied to today's recorded sales, transaction counts, and unnamed walk-in transactions; it cannot count people who entered without a recorded sale. `CUSTOMER_DIRECTORY` returns the total customer count and one page of up to 20 customer records with fields requested from the fixed `name`, `phone`, `email`, and `address` allowlist (the name is always included). Pass optional `offset` to request a later page; the response includes `offset`, `limit`, and `hasMore`. Current inventory omits archived products. Other customer responses are aggregate summaries without contact details.
 
 All existing API paths are under `/api`. Existing request and response shapes are unchanged. The route list and DTOs are in the controllers; the above table describes the new access rules.
 

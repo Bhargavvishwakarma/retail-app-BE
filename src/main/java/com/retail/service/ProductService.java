@@ -1,8 +1,11 @@
 package com.retail.service;
 
+import com.retail.config.CacheNames;
 import com.retail.model.Product;
 import com.retail.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,12 +47,20 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    })
     public Product create(Product product) {
         validateMinimumPrice(product);
         product.setId(null);
         return productRepository.save(product);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    })
     public Product update(UUID id, Product request) {
         validateMinimumPrice(request);
         Product existing = findById(id);
@@ -74,6 +85,10 @@ public class ProductService {
         }
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_SUMMARY, key = "T(java.time.LocalDate).now()"),
+            @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(java.time.LocalDate).now()")
+    })
     public void delete(UUID id) {
         Product product = findById(id);
         product.setActive(false);
