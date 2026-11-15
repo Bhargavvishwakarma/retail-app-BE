@@ -7,6 +7,10 @@ import com.retail.model.*;
 import com.retail.repository.CustomerRepository;
 import com.retail.repository.ProductRepository;
 import com.retail.repository.SaleRepository;
+import com.retail.notification.event.InventoryChangeSource;
+import com.retail.notification.event.InventoryStockChangedEvent;
+import com.retail.notification.event.NotificationBusinessEventPublisher;
+import com.retail.notification.event.SaleCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
@@ -22,6 +26,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 @Service
@@ -34,6 +39,7 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final NotificationBusinessEventPublisher notificationEventPublisher;
 
     public List<Sale> findAll() {
         return saleRepository.findAll(Sort.by(Sort.Direction.DESC, "saleDate"));
@@ -78,6 +84,7 @@ public class SaleService {
         }
 
         BigDecimal total = BigDecimal.ZERO;
+        List<InventoryStockChangedEvent> inventoryEvents = new ArrayList<>();
 
         for (SaleRequest.Item itemRequest : request.getItems()) {
             Product product = productRepository.findById(itemRequest.getProductId())
@@ -98,8 +105,13 @@ public class SaleService {
                 throw new IllegalArgumentException("Price for " + product.getName() + " must be at least Rs. " + minimumPrice + " (cost plus 15% profit)");
             }
 
-            product.setStockQuantity(product.getStockQuantity() - itemRequest.getQuantity());
+            int previousStockQuantity = product.getStockQuantity();
+            int currentStockQuantity = previousStockQuantity - itemRequest.getQuantity();
+            product.setStockQuantity(currentStockQuantity);
             productRepository.save(product);
+            inventoryEvents.add(new InventoryStockChangedEvent(
+                    UUID.randomUUID(), product.getId(), product.getName(), previousStockQuantity,
+                    currentStockQuantity, InventoryChangeSource.SALE));
 
             SaleItem item = new SaleItem();
             item.setSale(sale);
@@ -113,6 +125,10 @@ public class SaleService {
         }
 
         sale.setTotalAmount(total);
-        return saleRepository.save(sale);
+        Sale savedSale = saleRepository.save(sale);
+        notificationEventPublisher.publish(new SaleCompletedEvent(
+                UUID.randomUUID(), savedSale.getId(), savedSale.getSaleNumber(), savedSale.getTotalAmount()));
+        inventoryEvents.forEach(notificationEventPublisher::publish);
+        return savedSale;
     }
 }

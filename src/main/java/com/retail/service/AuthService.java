@@ -33,6 +33,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final GoogleIdentityVerifier googleIdentityVerifier;
     private final JdbcTemplate jdbcTemplate;
+    private final GoogleLoginService googleLoginService;
 
     public AuthResponse login(String email, String password) {
         AppUser user = userRepository.findByEmailIgnoreCase(normalizeEmail(email))
@@ -43,42 +44,10 @@ public class AuthService {
         return AuthResponse.from(jwtService.createToken(user), jwtService.getExpirationSeconds(), user);
     }
 
-    @Transactional
     public AuthResponse googleLogin(String idToken) {
         GoogleIdentityVerifier.VerifiedGoogleIdentity identity = googleIdentityVerifier.verify(idToken);
         if (!identity.emailVerified()) throw new GoogleIdentityVerifier.InvalidGoogleTokenException();
-
-        String email = normalizeEmail(identity.email());
-        AppUser user = userRepository.findByGoogleSub(identity.subject()).orElse(null);
-        if (user != null) {
-            if (!normalizeEmail(user.getEmail()).equals(email)) {
-                throw new GoogleIdentityVerifier.InvalidGoogleTokenException();
-            }
-        } else {
-            user = userRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
-                            "This Google account has not been invited"));
-            if (user.getGoogleSub() != null && !user.getGoogleSub().equals(identity.subject())) {
-                throw new GoogleIdentityVerifier.InvalidGoogleTokenException();
-            }
-            user.setGoogleSub(identity.subject());
-        }
-
-        if (!user.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account is inactive");
-        }
-        if (user.getRole() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account is not authorized");
-        }
-        try {
-            user = userRepository.saveAndFlush(user);
-        } catch (DataIntegrityViolationException exception) {
-            // A concurrent first sign-in can race to claim this Google subject. The
-            // unique database index makes one request win; the caller can retry.
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Google identity could not be linked; retry sign-in", exception);
-        }
-        return AuthResponse.from(jwtService.createToken(user), jwtService.getExpirationSeconds(), user);
+        return googleLoginService.complete(identity);
     }
 
     public AuthResponse refresh(String email) {

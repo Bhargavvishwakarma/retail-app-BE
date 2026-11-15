@@ -36,7 +36,8 @@ class AuthServiceGoogleLoginTest {
         jwtService = mock(JwtService.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
         JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
-        authService = new AuthService(users, passwordEncoder, jwtService, googleVerifier, jdbcTemplate);
+        authService = new AuthService(users, passwordEncoder, jwtService, googleVerifier, jdbcTemplate,
+                new GoogleLoginService(users, jwtService));
         owner = new AppUser();
         owner.setId(UUID.randomUUID());
         owner.setName("Shop Owner");

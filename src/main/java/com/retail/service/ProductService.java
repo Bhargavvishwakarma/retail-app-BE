@@ -2,6 +2,9 @@ package com.retail.service;
 
 import com.retail.config.CacheNames;
 import com.retail.model.Product;
+import com.retail.notification.event.InventoryChangeSource;
+import com.retail.notification.event.InventoryStockChangedEvent;
+import com.retail.notification.event.NotificationBusinessEventPublisher;
 import com.retail.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.math.BigDecimal;
@@ -22,6 +26,7 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final NotificationBusinessEventPublisher notificationEventPublisher;
 
     public List<Product> findAll(String search) {
         if (search != null && !search.isBlank()) {
@@ -63,9 +68,11 @@ public class ProductService {
             @CacheEvict(cacheNames = CacheNames.DASHBOARD_OPERATIONAL, key = "T(com.retail.util.StoreTime).today()"),
             @CacheEvict(cacheNames = CacheNames.DASHBOARD_ANALYTICS, allEntries = true)
     })
+    @Transactional
     public Product update(UUID id, Product request) {
         validateMinimumPrice(request);
         Product existing = findById(id);
+        Integer previousStockQuantity = existing.getStockQuantity();
         existing.setName(request.getName());
         existing.setSku(request.getSku());
         existing.setDescription(request.getDescription());
@@ -76,7 +83,15 @@ public class ProductService {
         existing.setStockQuantity(request.getStockQuantity());
         existing.setActive(request.getActive());
         existing.setCategory(request.getCategory());
-        return productRepository.save(existing);
+        Product updated = productRepository.save(existing);
+        Integer currentStockQuantity = updated.getStockQuantity();
+        if (previousStockQuantity != null && currentStockQuantity != null
+                && !previousStockQuantity.equals(currentStockQuantity)) {
+            notificationEventPublisher.publish(new InventoryStockChangedEvent(
+                    UUID.randomUUID(), updated.getId(), updated.getName(), previousStockQuantity,
+                    currentStockQuantity, InventoryChangeSource.MANUAL_ADJUSTMENT));
+        }
+        return updated;
     }
 
     private void validateMinimumPrice(Product product) {

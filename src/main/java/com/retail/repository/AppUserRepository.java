@@ -17,6 +17,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
     Optional<AppUser> findByGoogleSub(String googleSub);
     boolean existsByRole(UserRole role);
     long countByRoleAndActiveTrue(UserRole role);
+    List<AppUser> findByActiveTrue();
 
 
     List<AppUser> findAll(Sort sort);

@@ -51,7 +51,11 @@ public class GoogleIdentityTokenVerifier implements GoogleIdentityVerifier {
             }
             return new GoogleIdentityVerifier.VerifiedGoogleIdentity(
                     subject, email, name, Boolean.TRUE.equals(verifiedClaim));
-        } catch (IOException | GeneralSecurityException | IllegalArgumentException exception) {
+        } catch (IOException exception) {
+            // A certificate refresh is a network operation. It is not evidence that
+            // the user's ID token is invalid, and callers can safely retry it.
+            throw new GoogleIdentityVerifier.GoogleVerificationUnavailableException();
+        } catch (GeneralSecurityException | IllegalArgumentException exception) {
             throw new GoogleIdentityVerifier.InvalidGoogleTokenException();
         }
     }

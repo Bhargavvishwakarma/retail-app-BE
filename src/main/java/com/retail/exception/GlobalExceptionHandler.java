@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -46,7 +48,15 @@ public class GlobalExceptionHandler {
             GoogleIdentityVerifier.GoogleVerificationUnavailableException ex, HttpServletRequest request) {
         log.error("google_authentication_unavailable requestId={}", requestId());
         return response(HttpStatus.SERVICE_UNAVAILABLE, "AUTHENTICATION_UNAVAILABLE",
-                "Google sign-in is not configured", request);
+                "Google sign-in is temporarily unavailable", request);
+    }
+
+    @ExceptionHandler({CannotCreateTransactionException.class, DataAccessResourceFailureException.class})
+    public ResponseEntity<ProblemDetail> handleDatabaseUnavailable(RuntimeException ex,
+                                                                    HttpServletRequest request) {
+        log.error("database_unavailable errorType={} requestId={}", ex.getClass().getSimpleName(), requestId());
+        return response(HttpStatus.SERVICE_UNAVAILABLE, "DATABASE_UNAVAILABLE",
+                "The service is temporarily unavailable. Please retry shortly", request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

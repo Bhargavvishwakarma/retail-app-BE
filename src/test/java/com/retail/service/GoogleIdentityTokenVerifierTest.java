@@ -70,6 +70,15 @@ class GoogleIdentityTokenVerifierTest {
                 () -> new GoogleIdentityTokenVerifier(googleVerifier).verify("rejected-token"));
     }
 
+    @Test
+    void mapsGoogleNetworkFailuresToRetryableServiceUnavailable() throws Exception {
+        GoogleIdTokenVerifier googleVerifier = mock(GoogleIdTokenVerifier.class);
+        when(googleVerifier.verify("unavailable-token")).thenThrow(new IOException("network unavailable"));
+
+        assertThrows(GoogleIdentityVerifier.GoogleVerificationUnavailableException.class,
+                () -> new GoogleIdentityTokenVerifier(googleVerifier).verify("unavailable-token"));
+    }
+
     private void assertRejectedToken(GoogleIdToken result) throws IOException, GeneralSecurityException {
         GoogleIdTokenVerifier googleVerifier = mock(GoogleIdTokenVerifier.class);
         when(googleVerifier.verify("rejected-token")).thenReturn(result);

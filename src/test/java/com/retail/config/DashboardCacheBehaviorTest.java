@@ -6,6 +6,7 @@ import com.retail.model.Customer;
 import com.retail.model.PaymentMethod;
 import com.retail.model.Product;
 import com.retail.model.Sale;
+import com.retail.notification.event.NotificationBusinessEventPublisher;
 import com.retail.repository.CustomerRepository;
 import com.retail.repository.DashboardSummaryRepository;
 import com.retail.repository.ProductRepository;
@@ -176,7 +177,11 @@ class DashboardCacheBehaviorTest {
         when(productRepository.save(any(Product.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0, Product.class));
         when(saleRepository.save(any(Sale.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0, Sale.class));
+                .thenAnswer(invocation -> {
+                    Sale saved = invocation.getArgument(0, Sale.class);
+                    saved.setId(UUID.randomUUID());
+                    return saved;
+                });
 
         SaleRequest.Item item = new SaleRequest.Item();
         item.setProductId(productId);
@@ -248,6 +253,9 @@ class DashboardCacheBehaviorTest {
         @Bean SaleRepository saleRepository() { return mock(SaleRepository.class); }
         @Bean ProductRepository productRepository() { return mock(ProductRepository.class); }
         @Bean CustomerRepository customerRepository() { return mock(CustomerRepository.class); }
+        @Bean NotificationBusinessEventPublisher notificationBusinessEventPublisher() {
+            return mock(NotificationBusinessEventPublisher.class);
+        }
     }
 
 }
