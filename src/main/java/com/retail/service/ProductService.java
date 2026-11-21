@@ -35,10 +35,13 @@ public class ProductService {
         return productRepository.findByActiveTrue();
     }
 
-    public Page<Product> findPage(String search, int page, int size) {
+    public Page<Product> findPage(String search, int page, int size, boolean includeOutOfStock) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         if (search != null && !search.isBlank()) {
             return productRepository.searchActive(search.trim(), pageable);
+        }
+        if (!includeOutOfStock) {
+            return productRepository.findByActiveTrueAndStockQuantityGreaterThan(0, pageable);
         }
         return productRepository.findByActiveTrue(pageable);
     }

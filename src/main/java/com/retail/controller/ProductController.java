@@ -20,11 +20,12 @@ public class ProductController {
     @GetMapping
     public Object all(@RequestParam(required = false) String search,
                       @RequestParam(required = false) Integer page,
-                      @RequestParam(required = false) Integer size) {
+                      @RequestParam(required = false) Integer size,
+                      @RequestParam(defaultValue = "true") boolean includeOutOfStock) {
         if (page != null || size != null) {
             int pageNumber = page == null ? 0 : Math.max(0, page);
             int pageSize = size == null ? 10 : Math.min(100, Math.max(1, size));
-            return PageResponse.from(productService.findPage(search, pageNumber, pageSize));
+            return PageResponse.from(productService.findPage(search, pageNumber, pageSize, includeOutOfStock));
         }
         return productService.findAll(search);
     }

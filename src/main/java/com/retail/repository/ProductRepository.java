@@ -26,6 +26,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Page<Product> findByActiveTrue(Pageable pageable);
 
+    Page<Product> findByActiveTrueAndStockQuantityGreaterThan(int stockQuantity, Pageable pageable);
+
     long countByActiveTrue();
 
     long countByActiveTrueAndStockQuantityLessThan(int threshold);
